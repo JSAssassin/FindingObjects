@@ -81,9 +81,11 @@ export default function App() {
 
               buttonStyle={{
                 backgroundColor: '#fff',
-                width: 80,
-                height: 80,
-                borderRadius:80
+                width: 75,
+                height: 75,
+                borderRadius:75
+
+
               }}
 
             />

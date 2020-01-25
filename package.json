@@ -8,16 +8,20 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@react-native-community/async-storage": "^1.7.1",
     "@react-native-community/masked-view": "0.1.5",
+    "@tensorflow-models/mobilenet": "^2.0.4",
+    "@tensorflow/tfjs": "^1.5.1",
+    "@tensorflow/tfjs-react-native": "alpha",
     "expo": "~36.0.0",
     "expo-camera": "^8.0.0",
-    "expo-gl": "^8.0.0",
-    "expo-graphics": "^1.1.0",
+    "expo-gl": "~8.0.0",
     "expo-three": "3.0.0-alpha.8",
+    "jpeg-js": "^0.3.6",
     "react": "~16.9.0",
-    "react-dom": "~16.9.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-36.0.0.tar.gz",
     "react-native-elements": "^1.2.7",
+    "react-native-fs": "^2.16.2",
     "react-native-gesture-handler": "~1.5.0",
     "react-native-paper": "^3.5.1",
     "react-native-reanimated": "~1.4.0",
@@ -29,8 +33,10 @@
     "three": "^0.112.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.0.0",
     "babel-preset-expo": "~8.0.0",
-    "@babel/core": "^7.0.0"
+    "react-native-typescript-transformer": "^1.2.13",
+    "typescript": "^3.7.5"
   },
   "private": true
 }

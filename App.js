@@ -2,25 +2,41 @@ import { createAppContainer } from 'react-navigation';
 import { createStackNavigator } from 'react-navigation-stack';
 import HomeScreen from './components/home';
 import CameraScreen from './components/camera';
+import WinScreen from './components/endscreen'
 import React, { Component } from 'react';
-import * as tf from '@tensorflow/tfjs'
-import { fetch } from '@tensorflow/tfjs-react-native'
-// import * as mobilenet from '@tensorflow-models/mobilenet'
-// import * as jpeg from 'jpeg-js'
+import { Text, View } from 'react-native';
+import * as tf from '@tensorflow/tfjs';
+
 
 const AppNavigator = createStackNavigator(
   {
     Home: HomeScreen,
-    Camera: CameraScreen
+    Camera: CameraScreen,
+    End: WinScreen
   },
   {
     initialRouteName: 'Home'
   }
-  );
+);
 const AppContainer = createAppContainer(AppNavigator);
 
 export default class App extends Component {
+  state = {
+    isTfReady: false
+  };
+
+  async componentDidMount() {
+    await tf.ready();
+    this.setState({
+      isTfReady: true
+    });
+    console.log('Tensorflow has loaded:', this.state.isTfReady);
+  }
+
   render() {
-    return <AppContainer />;
+    if (this.state.isTfReady) {
+      return <AppContainer />;
+    }
+    return <Text>loading...</Text>
   }
 }

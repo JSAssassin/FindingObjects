@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
-import { Text, View, Image } from 'react-native';
+import { Text, View } from 'react-native';
 import { Camera } from 'expo-camera';
-import { Button } from 'react-native-elements';
-import * as jpeg from 'jpeg-js';
-import * as tf from '@tensorflow/tfjs';
-import { fetch } from '@tensorflow/tfjs-react-native';
-import * as mobilenet from '@tensorflow-models/mobilenet';
+import Clarifai from 'clarifai';
+import Secret from '../secrets';
+import CaptureButton from './capturebutton';
+import Timer from './timer';
 
-const itemsToFind = ['pen', 'glasses', 'book'];
+const itemsToFind = ['eyeglasses', 'book'];
 
 export default class CameraScreen extends Component {
   constructor(props) {
@@ -15,7 +14,6 @@ export default class CameraScreen extends Component {
     this.state = {
       hasPermission: null,
       type: Camera.Constants.Type.back,
-      isModelReady: false,
       itemIndex: 0
     };
   }
@@ -26,12 +24,6 @@ export default class CameraScreen extends Component {
     this.setState({
       hasPermission: permissionGranted
     });
-    this.model = await mobilenet.load({
-      version: 2,
-      alpha: 1
-    });
-    this.setState({ isModelReady: true });
-    console.log('MobileNet has loaded:', this.state.isModelReady);
   }
 
   async componentDidUpdate() {
@@ -42,9 +34,19 @@ export default class CameraScreen extends Component {
     });
   }
 
+  async identifyImage(base64Image) {
+    const app = new Clarifai.App({
+      apiKey: Secret.APIkey
+    });
+    // Identify the image
+    let response = await app.models.predict(Clarifai.GENERAL_MODEL, {
+      base64: base64Image
+    });
+    return response.outputs[0].data.concepts;
+  }
+
   render() {
     let hasPermission = this.state.hasPermission;
-    let mobileNetReady = this.state.isModelReady;
     let type = this.state.type;
 
     if (hasPermission === null) {
@@ -53,10 +55,6 @@ export default class CameraScreen extends Component {
 
     if (hasPermission === false) {
       return <Text>This app requires camera permissions.</Text>;
-    }
-
-    if (mobileNetReady === false) {
-      return <Text>loading</Text>;
     }
 
     return (
@@ -76,9 +74,18 @@ export default class CameraScreen extends Component {
                 justifyContent: 'center'
               }}
             >
-              <Text
+              <Timer
+                onTimerComplete={() => {
+                  alert("Time's up!");
+                }}
                 style={{
                   color: '#fff',
+                  fontSize: 50
+                }}
+              />
+              <Text
+                style={{
+                  color: '#006064',
                   fontSize: 30
                 }}
               >
@@ -93,69 +100,53 @@ export default class CameraScreen extends Component {
                 justifyContent: 'center'
               }}
             >
-              <Button
+              <CaptureButton
                 onPress={async () => {
-                  if (this.camera) {
-                    this.camera.pausePreview();
-                    let {
-                      uri,
-                      width,
-                      height,
-                      exif,
-                      base64
-                    } = await this.camera.takePictureAsync({
-                      quality: 0,
-                      base64: true
-                    });
-                    console.log('URI: ', uri);
+                  {
+                    if (this.camera) {
+                      this.camera.pausePreview();
+                      let {
+                        uri,
+                        width,
+                        height,
+                        exif,
+                        base64
+                      } = await this.camera.takePictureAsync({
+                        quality: 0,
+                        base64: true
+                      });
+                      const predictions = await this.identifyImage(base64);
+                      console.log(predictions);
 
-                    const response = await fetch(uri, {}, { isBinary: true });
+                      // look at all objects in the prediction
+                      // if className contains object to find
+                      // then we say it's correct
+                      let correct = predictions.find(item => {
+                        return item.name.includes(
+                          itemsToFind[this.state.itemIndex]
+                        );
+                      });
+                      console.log(correct, 'CORRECT');
+                      if (correct) {
+                        const nextIndex = ++this.state.itemIndex;
+                        console.log('nextIndex: ', nextIndex);
 
-                    console.log('Response: ', response);
-                    const rawImageData = await response.arrayBuffer();
-                    console.log(
-                      'rawImageData Length: ',
-                      rawImageData.byteLength
-                    );
-                    const imageTensor = imageToTensor(rawImageData);
-                    console.log('imageTensor: ', imageTensor);
-
-                    const predictions = await this.model.classify(imageTensor);
-                    console.log(predictions);
-
-                    // look at all objects in the prediction
-                    // if className contains object to find
-                    // then we say it's correct
-                    let correct = predictions.find(item => {
-                      return item.className.includes(
-                        itemsToFind[this.state.itemIndex]
-                      );
-                    });
-                    console.log(correct, 'CORRECT')
-                    if (correct) {
-                      const nextIndex = ++this.state.itemIndex;
-                      console.log('NEXTINDEX: ', nextIndex)
-
-                      if (nextIndex >= itemsToFind.length) {
-                        this.props.navigation.navigate('End');
+                        if (nextIndex >= itemsToFind.length) {
+                          this.setState({
+                            itemIndex: 0
+                          });
+                          this.props.navigation.navigate('End');
+                        } else {
+                          this.setState({
+                            itemIndex: nextIndex
+                          });
+                        }
                       } else {
-                        this.setState({
-                          itemIndex: nextIndex
-                        });
+                        alert('That was incorrect. Try again!');
                       }
-                    } else {
-                      alert('That was incorrect. Try again!')
+                      this.camera.resumePreview();
                     }
-                    this.camera.resumePreview();
-
                   }
-                }}
-                title="Click"
-                buttonStyle={{
-                  backgroundColor: '#fff',
-                  width: 75,
-                  height: 75,
-                  borderRadius: 75
                 }}
               />
             </View>
@@ -164,21 +155,4 @@ export default class CameraScreen extends Component {
       </View>
     );
   }
-}
-
-function imageToTensor(rawImageData) {
-  const TO_UINT8ARRAY = true;
-  const { width, height, data } = jpeg.decode(rawImageData, TO_UINT8ARRAY);
-  // Drop the alpha channel info for mobilenet
-  const buffer = new Uint8Array(width * height * 3);
-  let offset = 0; // offset into original data
-  for (let i = 0; i < buffer.length; i += 3) {
-    buffer[i] = data[offset];
-    buffer[i + 1] = data[offset + 1];
-    buffer[i + 2] = data[offset + 2];
-
-    offset += 4;
-  }
-
-  return tf.tensor3d(buffer, [height, width, 3]);
 }

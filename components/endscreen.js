@@ -6,27 +6,16 @@ import { StackActions, NavigationActions } from 'react-navigation';
 export default class WinScreen extends Component {
   render() {
     return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#FFAB00'
-        }}
-      >
-        <View
-          style={{ flex: 4, alignItems: 'center', justifyContent: 'center' }}
-        >
+      <View style={styles.container}>
+        <View style={styles.textContainer}>
           <Text style={styles.text}>
             Yay! You've found all the items. Congrats You Won!!!! 🥳
           </Text>
         </View>
-        <View
-          style={{ flex: 2, alignItems: 'center', justifyContent: 'center' }}
-        >
+        <View style={styles.btnContainer}>
           <Button
             onPress={() => {
-              // reset the navigation stack
+              // reset the navigation stack https://reactnavigation.org/docs/en/stack-actions.html
               const resetAction = StackActions.reset({
                 index: 0,
                 actions: [NavigationActions.navigate({ routeName: 'Camera' })]
@@ -35,11 +24,7 @@ export default class WinScreen extends Component {
             }}
             title="Play Again"
             accessibilityLabel="button to play the game again"
-            buttonStyle={{
-              backgroundColor: '#D32F2F',
-              width: 150,
-              height: 50
-            }}
+            buttonStyle={styles.btn}
           />
         </View>
       </View>
@@ -48,14 +33,27 @@ export default class WinScreen extends Component {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFAB00'
+  },
+  textContainer: { flex: 4, alignItems: 'center', justifyContent: 'center' },
+  btnContainer: { flex: 2, alignItems: 'center', justifyContent: 'center' },
   text: {
     paddingTop: 100,
     paddingLeft: 30,
     paddingRight: 30,
     fontSize: 40,
-    color: '#fff',
+    color: '#006064',
     fontWeight: '400',
     textAlign: 'center',
     alignSelf: 'center'
+  },
+  btn: {
+    backgroundColor: '#D32F2F',
+    width: 150,
+    height: 50
   }
 });

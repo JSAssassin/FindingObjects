@@ -3,14 +3,15 @@ import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
 
 export default class HomeScreen extends React.Component {
   render() {
+    const {navigation} = this.props;
     return (
       <View style={styles.container}>
         <TouchableOpacity
-          style={styles.customBtnBG}
-          onPress={() => this.props.navigation.navigate('Camera')}
+          style={styles.BtnBG}
+          onPress={() => navigation.navigate('Camera')}
         >
           <Text
-            style={styles.customBtnText}
+            style={styles.BtnText}
             adjustsFontSizeToFit
             minimumFontScale={0.5}
             numberOfLines={1}
@@ -32,8 +33,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#006064'
   },
 
-  /* Here style the text of your button */
-  customBtnText: {
+  BtnText: {
     fontSize: 40,
     fontWeight: '400',
     color: '#fff',
@@ -41,8 +41,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center'
   },
 
-  /* Here style the background of your button */
-  customBtnBG: {
+  BtnBG: {
     backgroundColor: '#D32F2F',
     padding:30
   }

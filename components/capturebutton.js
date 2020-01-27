@@ -1,23 +1,19 @@
 import React from 'react';
-import { Button } from 'react-native-elements';
-
+import { StyleSheet, TouchableOpacity } from 'react-native';
 
 export default class CaptureButton extends React.Component {
   render() {
     return (
-
-        <Button
-          onPress={this.props.onPress}
-          buttonStyle={{
-            backgroundColor: '#FFAB00',
-            width: 75,
-            height: 75,
-            borderRadius: 75
-          }}
-          title=""
-          />
-
+      <TouchableOpacity onPress={this.props.onPress} style={styles.capBtn} />
     );
   }
 }
 
+const styles = StyleSheet.create({
+  capBtn: {
+    backgroundColor: '#FFAB00',
+    width: 75,
+    height: 75,
+    borderRadius: 75
+  }
+});

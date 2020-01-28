@@ -1,15 +1,13 @@
 import React, { Component } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, Alert } from 'react-native';
 import { Camera } from 'expo-camera';
 import Clarifai from 'clarifai';
 import Secret from '../secrets';
 import CaptureButton from './capturebutton';
-// import Timer from './timer';
-// import { StackActions, NavigationActions } from 'react-navigation';
-
+import Timer from './timer';
+import { StackActions, NavigationActions } from 'react-navigation';
 
 const itemsToFind = ['eyeglasses', 'book', 'pencil', 'computer'];
-
 
 export default class CameraScreen extends Component {
   constructor(props) {
@@ -58,7 +56,7 @@ export default class CameraScreen extends Component {
     }
 
     if (hasPermission === false) {
-      alert('This app requires camera permissions')
+      alert('This app requires camera permissions');
     }
 
     return (
@@ -72,26 +70,30 @@ export default class CameraScreen extends Component {
         >
           <View style={styles.secondContainer}>
             <View style={styles.timerTextContainer}>
-              {/* <Timer
+              <Timer
                 onTimerComplete={() => {
-                  alert(
-                    'The End',
-                    'Time\'s Up!',
+                  Alert.alert(
+                    'Game Over',
+                    'You ran out of time :(',
                     [
-                      {text: 'OK', onPress: () =>{
-                        const resetAction = StackActions.reset({
-                          index: 0,
-                          actions: [NavigationActions.navigate({ routeName: 'Home' })]
-                        });
-                        this.props.navigation.dispatch(resetAction);
-                      } },
+                      {
+                        text: 'OK',
+                        onPress: () => {
+                          const resetAction = StackActions.reset({
+                            index: 0,
+                            actions: [
+                              NavigationActions.navigate({ routeName: 'Home' })
+                            ]
+                          });
+                          this.props.navigation.dispatch(resetAction);
+                        }
+                      }
                     ],
-                    {cancelable: false},
+                    { cancelable: false }
                   );
-                  // alert("Time's up!");
                 }}
                 style={styles.timer}
-              /> */}
+              />
               <Text style={styles.text}>
                 Find {itemsToFind[this.state.itemIndex]}
               </Text>
@@ -118,7 +120,7 @@ export default class CameraScreen extends Component {
                       });
                       // Get the identified image and get predictions from clarifai API
                       const predictions = await this.identifyImage(base64);
-                      console.log('PREDICTIONS: ',predictions);
+                      console.log('PREDICTIONS: ', predictions);
 
                       // look at all objects in the prediction
                       // if name contains object to find
@@ -153,7 +155,9 @@ export default class CameraScreen extends Component {
                       else {
                         alert('That was incorrect. Try again!');
                       }
-                      this.camera.resumePreview();
+                      if(this.camera){
+                        this.camera.resumePreview();
+                      }
                     }
                   }
                 }}
@@ -192,7 +196,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center'
-  },
+  }
   // timer: {
   //   color: '#fff',
   //   fontSize: 50

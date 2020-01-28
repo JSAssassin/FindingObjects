@@ -1,86 +1,116 @@
-// import React, { Component } from 'react';
-// import { Text } from 'react-native';
+import React, { Component } from 'react';
+import { Text } from 'react-native';
 
-// export default class Timer extends Component {
-//   constructor(props) {
-//     super(props);
+export default class Timer extends Component {
+  constructor(props) {
+    super(props);
 
-//     this.state = {
-//       startTime: 0,
-//       lastUpdate: 0,
-//       secondsSinceStart: 0,
-//       endTime: 10,
-//       isStopped: false
-//     };
-//   }
-//   componentDidMount() {
-//     // set when the component mounted
-//     let startTime = new Date();
+    this.state = {
+      // time (Date) when we mounted the component
+      startTime: 0,
+      // number of seconds since the component mounted
+      // currentTime - startTime
+      secondsSinceStart: 0,
 
-//     this.setState({
-//       startTime: startTime,
-//       lastUpdate: startTime
-//     });
-//   }
+      // time (Date) when we last called setState
+      lastStateUpdate: 0,
 
-//   componentDidUpdate() {
-//     if (
-//       this.state.secondsSinceStart >= this.state.endTime ||
-//       this.state.isStopped
-//     ) {
-//       return;
-//     }
+      // number of seconds since start after which the timer should stop
+      endTime: 90,
 
-//     let currentTime = new Date();
+      // a way to check if something has stopped the timer
+      // if it's stopped, don't do anything
+      isStopped: false
+    };
+  }
 
-//     // this gives us seconds since the component mounted
-//     var difference = (currentTime - this.state.startTime) / 1000;
+  componentDidMount() {
+    // set when the component mounted
+    let currentTime = new Date();
 
-//     // this is time since we last updated the state
-//     // if componentDidMount is called 10 times a second, we don't
-//     // need to update the state 10 times
-//     var differenceSinceLastUpdate =
-//       (currentTime - this.state.lastUpdate) / 1000;
+    this.setState({
+      startTime: currentTime,
+      lastStateUpdate: currentTime
+    });
+  }
 
-//     // Check to see if we should update the state.
-//     // only if at least 1 second has passed since the last update
-//     if (difference > 1 && differenceSinceLastUpdate > 1) {
-//       console.log(`difference: ${difference}, `);
+  /**
+   * {
+      startTime: 12:00:00,
+      secondsSinceStart: 10,
+      lastStateUpdate: 12:00:10,
+      endTime: 10,
+      isStopped: true
+    };
+   */
+  componentDidUpdate() {
+    if (
+      this.state.secondsSinceStart >= this.state.endTime ||
+      this.state.isStopped
+    ) {
+      return;
+    }
+    // 12:00:10
+    let currentTime = new Date();
 
-//       if (difference >= this.state.endTime && this.state.isStopped == false) {
-//         if (this.props.onTimerComplete) {
-//           console.log('onTimerComplete');
-//           this.props.onTimerComplete();
-//         }
-//       }
+    // this gives us seconds since the component mounted
+    //10
+    var secondsSinceStart = (currentTime - this.state.startTime) / 1000;
 
-//       // actually update the state
-//       this.setState({
-//         secondsSinceStart: Math.floor(difference),
-//         lastUpdate: currentTime
-//       });
-//     }
+    // this is time since we last updated the state
+    // if componentDidMount is called 10 times a second, we don't
+    // need to update the state 10 times
+    // 3
+    var differenceSinceLastUpdate =
+      (currentTime - this.state.lastStateUpdate) / 1000;
 
-//     console.log(this.state.secondsSinceStart);
-//   }
+    // Check to see if we should update the state.
+    // only if at least 1 second has passed since the last time we called setState
+    if (differenceSinceLastUpdate >= 1) {
 
-//   componentWillUnmount() {
-//     console.log('timer:componentWillUnmount');
-//     this.setState({
-//       isStopped: true
-//     });
-//   }
+      if (
+        secondsSinceStart >= this.state.endTime &&
+        this.state.isStopped == false
+      ) {
+        // if we get here we've hit our goal. timer is complete.
 
-//   render() {
-//     return (
-//       <Text
-//         style={{
-//           color: '#D32F2F',
-//           fontSize: 50
-//         }}
-//       >
-//         TIMER: {this.state.endTime - this.state.secondsSinceStart}
-//       </Text>
-//     );
-//   }
-// }
+        // this is a callback prop that we should call when the timer
+        // completes. This is so the thing that uses this component
+        // can do something when it stops
+        if (this.props.onTimerComplete) {
+          this.props.onTimerComplete();
+        }
+
+        // stop the timer
+        this.setState({
+          isStopped: true
+        });
+      }
+
+      // actually update the state
+      this.setState({
+        secondsSinceStart: Math.floor(secondsSinceStart),
+        lastStateUpdate: currentTime
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    this.setState({
+      isStopped: true
+    });
+  }
+
+  render() {
+    return (
+      <Text
+        style={{
+          color: '#D32F2F',
+          fontSize: 50
+        }}
+      >
+        TIMER: {this.state.endTime - this.state.secondsSinceStart}
+      </Text>
+    );
+  }
+}
